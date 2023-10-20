@@ -5,78 +5,36 @@ import Slots from "./components/Slots";
 import { PaperProvider } from "react-native-paper";
 import { Provider } from "react-redux";
 import { store } from "./store";
+import Bots from "./components/Bots";
 
 export default function App() {
   const [page, setPage] = useState("home");
-  const [errMsg, setErrMsg] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  var ws = useRef(
-    new WebSocket("ws://booking-bot-management-websocket-server.onrender.com/")
-  ).current;
-
-  useEffect(() => {
-    ws.onopen = () => {
-      console.log("Connected to the server");
-    };
-    // ws.onclose = (e) => {
-    //   console.log("Disconnected. Check internet or server.");
-    //   setPage("home");
-    // };
-    // ws.onerror = (e) => {
-    //   console.log("error: ", e.message);
-    //   setPage("home");
-    // };
-    // ws.onmessage = (e) => {
-    //   const { data } = e;
-    //   const dataArr = data.split("--");
-    //   if (dataArr[0] === "success") {
-    //     setIsLoading(false);
-    //     setPage("slots");
-    //   } else if (dataArr[0] === "failed") {
-    //     setIsLoading(false);
-    //     setErrMsg(dataArr[1]);
-    //   } else if (dataArr[0] === "disconnect") {
-    //     setPage("home");
-    //   }
-    // };
-  }, []);
-
-  const connect = (deviceId) => {
-    if (deviceId === "") {
-      setErrMsg("Please enter your device id");
-      return;
-    }
-
-    setIsLoading(true);
-    ws.send(`app--${deviceId}`);
-  };
 
   return (
     <Provider store={store}>
       <PaperProvider>
-        <SafeAreaView style={styles.container}>
-          {page === "home" ? (
-            <Home
-            // connect={connect}
-            // errMsg={errMsg}
-            // setErrMsg={setErrMsg}
-            // isLoading={isLoading}
-            // setIsLoading={setIsLoading}
-            />
-          ) : null}
-          {page === "slots" ? <Slots /> : null}
-        </SafeAreaView>
+        {/* <SafeAreaView style={styles.container}> */}
+        {page === "home" ? <Home gotoBotsPage={() => setPage("bots")} /> : ""}
+        {page === "bots" ? (
+          <Bots
+            gotoLoginPage={() => setPage("home")}
+            gotoSlotsPage={() => setPage("slots")}
+          />
+        ) : (
+          ""
+        )}
+        {page === "slots" ? (
+          <Slots
+            gotoBotsPage={() => setPage("bots")}
+            gotoLoginPage={() => setPage("home")}
+          />
+        ) : (
+          ""
+        )}
+        {/* </SafeAreaView> */}
       </PaperProvider>
     </Provider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    paddingVertical: 50,
-    paddingHorizontal: 10,
-  },
-});
 
 AppRegistry.registerComponent("Booking-Bot-Management", () => App);

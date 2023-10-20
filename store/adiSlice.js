@@ -1,50 +1,95 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  reservedSlots: [],
-  isBotWorking: false,
-  isBotConnected: false,
-  isBotStarting: false,
-  isBotStopping: false,
+  bots: {},
 };
 
 const adiSlice = createSlice({
   name: "adi",
   initialState,
   reducers: {
-    startBot: (state) => {
-      state.isBotStarting = true;
+    startBot: (state, { payload }) => {
+      if (state.bots[payload]) state.bots[payload].isStarting = true;
     },
-    stopBot: (state) => {
-      state.isBotStopping = true;
+    stopBot: (state, { payload }) => {
+      if (state.bots[payload]) state.bots[payload].isStopping = true;
     },
-    startedBot: (state) => {
-      state.isBotWorking = true;
-      state.isBotStarting = false;
+    startedBot: (state, { payload }) => {
+      if (state.bots[payload]) {
+        state.bots[payload].isWorking = true;
+        state.bots[payload].isStarting = false;
+      }
     },
-    stoppedBot: (state) => {
-      state.isBotWorking = false;
-      state.isBotStopping = false;
+    stoppedBot: (state, { payload }) => {
+      if (state.bots[payload]) {
+        state.bots[payload].isWorking = false;
+        state.bots[payload].isStopping = false;
+      }
     },
-    setIsBotConnected: (state, { payload }) => {
-      state.isBotConnected = payload;
+    setBots: (state, { payload }) => {
+      for (botId of payload) {
+        state.bots[botId] = { reservedSlots: [] };
+      }
     },
     setReservedSlots: (state, { payload }) => {
-      state.reservedSlots = payload;
+      const { botId, reservedSlots } = payload;
+      if (state.bots[botId]) {
+        state.bots[botId].reservedSlots = reservedSlots;
+      }
     },
-    acceptSlot: (state, { payload }) => {},
-    declineSlot: (state, { payload }) => {},
+    botConnected: (state, { payload }) => {
+      state.bots[payload] = { reservedSlots: [] };
+    },
+    botDisconnected: (state, { payload }) => {
+      delete state.bots[payload];
+    },
+    acceptSlot: (state, { payload }) => {
+      const { botId, slot } = payload;
+      if (state.bots[botId]) {
+        state.bots[botId].acceptingSlot = slot;
+      }
+    },
+    declineSlot: (state, { payload }) => {
+      const { botId, slot } = payload;
+      if (state.bots[botId]) {
+        state.bots[botId].decliningSlot = slot;
+      }
+    },
+    acceptedSlot: (state, { payload }) => {
+      if (state.bots[payload]) {
+        state.bots[payload].reservedSlots = state.bots[
+          payload
+        ].reservedSlots.filter(
+          (slot) => slot !== state.bots[payload].acceptingSlot
+        );
+        state.bots[payload].acceptingSlot = null;
+      }
+    },
+    declinedSlot: (state, { payload }) => {
+      if (state.bots[payload]) {
+        state.bots[payload].reservedSlots = state.bots[
+          payload
+        ].reservedSlots.filter(
+          (slot) => slot !== state.bots[payload].decliningSlot
+        );
+        state.bots[payload].decliningSlot = null;
+      }
+    },
   },
 });
 
 export const {
   startBot,
-  stopBot,
   startedBot,
+  stopBot,
   stoppedBot,
-  setIsBotConnected,
+  setBots,
   setReservedSlots,
   acceptSlot,
   declineSlot,
+  acceptedSlot,
+  declinedSlot,
+  botConnected,
+  botDisconnected,
 } = adiSlice.actions;
 export default adiSlice.reducer;

@@ -5,19 +5,26 @@ export default class SocketClient {
   socket;
 
   connect() {
-    this.socket = io(WEB_SOCKET_HOST);
+    console.log("start connecting..");
+    try {
+      this.socket = io(WEB_SOCKET_HOST);
 
-    this.socket.on("error", (e) => {
-      console.log("error: ", e);
-    });
+      this.socket.on("error", (e) => {
+        console.log("error: ", e);
+      });
 
-    this.socket.on("disconnect", (e) => {
-      console.log("disconnected: ", e);
-    });
+      this.socket.on("disconnect", (e) => {
+        console.log("disconnected: ", e);
+        this.connect();
+      });
 
-    this.socket.on("connect", () => {
-      console.log("connected");
-    });
+      this.socket.on("connect", () => {
+        console.log("connected");
+        this.socket.emit("app connect");
+      });
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   disconnect() {
@@ -30,6 +37,12 @@ export default class SocketClient {
   emit(eventName, data) {
     if (this.socket) {
       this.socket.emit(eventName, data);
+    }
+  }
+
+  emit(msg, eventName, data) {
+    if (this.socket) {
+      this.socket.emit(msg, eventName, data);
     }
   }
 

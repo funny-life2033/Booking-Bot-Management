@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import {
   Button,
   TextInput,
@@ -9,37 +9,25 @@ import {
 import { SafeAreaView, StyleSheet } from "react-native";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { login } from "../store/authSlice";
+import { connect, initError } from "../store/authSlice";
 
-const Home = (
-  {
-    // connect,
-    // setErrMsg,
-    // errMsg,
-    // isLoading
-  }
-) => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [errMsg, setErrMsg] = useState(null);
-  const [passwordVisible, setPasswordVisible] = useState(false);
-  // const [deviceId, setDeviceId] = useState("");
-
+const Home = ({ gotoBotsPage }) => {
   const dispatch = useDispatch();
-  const isLoading = useSelector((state) => state.user.isLoading);
+  const { isLoading, error, isConnected } = useSelector((state) => state.user);
+
+  useEffect(() => {
+    console.log(isConnected);
+    if (isConnected) {
+      gotoBotsPage();
+    }
+  }, [isConnected]);
 
   const hasErrors = () => {
-    return errMsg;
+    return error;
   };
 
-  const loginSubmit = () => {
-    if (username === "" || password === "") {
-      setErrMsg("Username or password is required");
-      return;
-    }
-
-    setErrMsg(null);
-    dispatch(login({ username, password }));
+  const connectionSubmit = () => {
+    dispatch(connect());
   };
 
   // const deviceIdChange = (text) => {
@@ -55,71 +43,8 @@ const Home = (
           source={require("../assets/home-back.png")}
         />
         <Card.Content style={styles.content}>
-          {/* <TextInput
-            theme={{ colors: { primary: errMsg ? "red" : "green" } }}
-            style={styles.input}
-            value={deviceId}
-            label="Device Id"
-            onChangeText={deviceIdChange}
-            mode="outlined"
-            disabled={isLoading}
-          />
           <HelperText type="error" visible={hasErrors()}>
-            {errMsg}
-          </HelperText>
-          <Button
-            theme={{ colors: { primary: "green" } }}
-            mode="contained"
-            disabled={isLoading}
-            icon={
-              isLoading
-                ? () => (
-                    <ActivityIndicator
-                      size={17}
-                      animating={true}
-                      color="gray"
-                    />
-                  )
-                : "connection"
-            }
-            onPressOut={() => connect(deviceId)}
-          >
-            {isLoading ? "Connecting" : "Connect the Device"}
-          </Button> */}
-          <TextInput
-            theme={{
-              colors: { primary: errMsg ? "red" : "green", surface: "green" },
-            }}
-            style={styles.input}
-            value={username}
-            onChangeText={setUsername}
-            label={"User name"}
-            mode="outlined"
-            disabled={isLoading}
-          />
-          <HelperText type="error" visible={hasErrors()}>
-            {errMsg}
-          </HelperText>
-
-          <TextInput
-            theme={{ colors: { primary: errMsg ? "red" : "green" } }}
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-            label={"Password"}
-            mode="outlined"
-            disabled={isLoading}
-            secureTextEntry={!passwordVisible}
-            textContentType="password"
-            right={
-              <TextInput.Icon
-                onPress={() => setPasswordVisible((visible) => !visible)}
-                icon={"eye"}
-              />
-            }
-          />
-          <HelperText type="error" visible={hasErrors()}>
-            {errMsg}
+            {error}
           </HelperText>
 
           <Button
@@ -137,9 +62,9 @@ const Home = (
                   )
                 : "connection"
             }
-            onPressOut={loginSubmit}
+            onPressOut={connectionSubmit}
           >
-            {isLoading ? "Loading.." : "Log in"}
+            {isLoading ? "Connecting.." : "Connect"}
           </Button>
         </Card.Content>
       </Card>
@@ -152,8 +77,8 @@ const styles = StyleSheet.create({
     height: "100%",
     width: "100%",
     justifyContent: "center",
+    paddingHorizontal: 10,
   },
-  input: {},
   content: {
     justifyContent: "center",
   },

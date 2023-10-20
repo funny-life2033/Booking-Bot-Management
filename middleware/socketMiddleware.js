@@ -1,10 +1,14 @@
 import {
-  setIsBotConnected,
-  setReservedSlots,
-  startedBot,
-  stoppedBot,
+  acceptedSlot as adiAcceptedSlot,
+  botConnected as adiBotConnected,
+  botDisconnected as adiBotDisconnected,
+  declinedSlot as adiDeclinedSlot,
+  setBots as setAdiBots,
+  setReservedSlots as setAdiReservedSlots,
+  startedBot as startedAdiBot,
+  stoppedBot as stoppedAdiBot,
 } from "../store/adiSlice";
-import { loggedIn, loginFailed } from "../store/authSlice";
+import { connected, connectFailed } from "../store/authSlice";
 
 export default function socketMiddleware(socket) {
   return (params) => (next) => (action) => {
@@ -12,51 +16,72 @@ export default function socketMiddleware(socket) {
     const { type, payload } = action;
 
     switch (type) {
-      case "user/login": {
+      case "user/connect": {
         socket.connect();
 
-        socket.on("user login success", (data) => {
-          dispatch(loggedIn(data));
+        socket.on(
+          "app connect success",
+          ({ connectedAdiBots, connectedStudentBots }) => {
+            dispatch(connected());
+            dispatch(setAdiBots(connectedAdiBots));
+          }
+        );
+
+        socket.on("app connect failed", (err) => {
+          dispatch(connectFailed(err));
         });
 
-        socket.on("user login failed", () => {
-          dispatch(loginFailed());
+        socket.on("adi bot connect", (botId) => {
+          dispatch(adiBotConnected(botId));
         });
 
-        socket.on("adi bot connected", () => {
-          dispatch(setIsBotConnected(true));
+        socket.on("adi bot disconnect", (botId) => {
+          dispatch(adiBotDisconnected(botId));
         });
 
-        socket.on("adi bot disconnected", () => {
-          dispatch(setIsBotConnected(false));
+        socket.on("adi bot started", (botId) => {
+          dispatch(startedAdiBot(botId));
         });
 
-        socket.on("adi bot started", () => {
-          dispatch(startedBot());
+        socket.on("adi bot stopped", (botId) => {
+          dispatch(stoppedAdiBot(botId));
         });
 
-        socket.on("adi bot stopped", () => {
-          dispatch(stoppedBot());
+        socket.on("adi accepted slot", (botId) => {
+          dispatch(adiAcceptedSlot(botId));
         });
 
-        socket.on("reserved new slot", (slots) => {
-          dispatch(setReservedSlots(slots));
+        socket.on("adi declined slot", (botId) => {
+          dispatch(adiDeclinedSlot(botId));
         });
 
-        socket.emit("new login", payload);
+        socket.on("reserved new slot", (data) => {
+          dispatch(setAdiReservedSlots(data));
+        });
+
+        socket.emit("app connect");
 
         break;
       }
-      case "user/logout": {
+      case "user/disconnect": {
         socket.disconnect();
         break;
       }
       case "adi/startBot": {
-        socket.emit("adi bot start");
+        console.log("adi/startBot: ", payload);
+        socket.emit("message", "adi bot start", { to: payload });
         break;
       }
       case "adi/stopBot": {
-        socket.emit("adi bot stop");
+        socket.emit("message", "adi bot stop", { to: payload });
+        break;
+      }
+      case "adi/acceptSlot": {
+        socket.emit("message", "adi accept slot", payload);
+        break;
+      }
+      case "adi/declineSlot": {
+        socket.emit("message", "adi decline slot", payload);
         break;
       }
     }

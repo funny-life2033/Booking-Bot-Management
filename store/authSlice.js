@@ -1,8 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  currentUser: null,
-  isAuthenticated: false,
+  isConnected: false,
   error: null,
   isLoading: false,
 };
@@ -11,23 +10,24 @@ const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    login: (state) => {
+    connect: (state) => {
+      state.error = null;
       state.isLoading = true;
     },
-    loggedIn: (state, { payload }) => {
+    connected: (state) => {
       state.isLoading = false;
-      state.currentUser = payload;
-      state.isAuthenticated = true;
+      state.isConnected = true;
     },
-    loginFailed: (state) => {
+    connectFailed: (state, { payload }) => {
       state.isLoading = false;
+      state.error = payload;
     },
-    logout: (state) => {
-      state.currentUser = null;
-      state.isAuthenticated = false;
+    disconnect: (state) => {
+      state.isConnected = false;
     },
   },
 });
 
-export const { login, loggedIn, loginFailed, logout } = userSlice.actions;
+export const { connect, connected, connectFailed, initError, disconnect } =
+  userSlice.actions;
 export default userSlice.reducer;
