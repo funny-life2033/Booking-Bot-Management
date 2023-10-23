@@ -7,6 +7,7 @@ import {
   setReservedSlots as setAdiReservedSlots,
   startedBot as startedAdiBot,
   stoppedBot as stoppedAdiBot,
+  setIsWorking as adiSetIsWorking,
 } from "../store/adiSlice";
 import { connected, connectFailed } from "../store/authSlice";
 
@@ -55,8 +56,24 @@ export default function socketMiddleware(socket) {
           dispatch(adiDeclinedSlot(botId));
         });
 
-        socket.on("reserved new slot", (data) => {
+        socket.on(
+          "adi bot reserved slots",
+          ({ botId, isWorking, reservedSlots }) => {
+            dispatch(adiSetIsWorking({ botId, isWorking }));
+            dispatch(setAdiReservedSlots({ botId, reservedSlots }));
+          }
+        );
+
+        socket.on("adi reserved new slot", (data) => {
           dispatch(setAdiReservedSlots(data));
+        });
+
+        socket.on("error alert", (data) => {
+          console.log("error alert", data);
+        });
+
+        socket.on("alert", (data) => {
+          console.log("alert", data);
         });
 
         socket.emit("app connect");

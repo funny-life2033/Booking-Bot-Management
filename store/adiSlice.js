@@ -8,6 +8,10 @@ const adiSlice = createSlice({
   name: "adi",
   initialState,
   reducers: {
+    setIsWorking: (state, { payload }) => {
+      if (state.bots[payload])
+        state.bots[payload.botId].isWorking = payload.isWorking;
+    },
     startBot: (state, { payload }) => {
       if (state.bots[payload]) state.bots[payload].isStarting = true;
     },
@@ -91,5 +95,6 @@ export const {
   declinedSlot,
   botConnected,
   botDisconnected,
+  setIsWorking,
 } = adiSlice.actions;
 export default adiSlice.reducer;

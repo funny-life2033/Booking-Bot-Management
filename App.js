@@ -6,6 +6,7 @@ import { PaperProvider } from "react-native-paper";
 import { Provider } from "react-redux";
 import { store } from "./store";
 import Bots from "./components/Bots";
+import { AlertNotificationRoot } from "react-native-alert-notification";
 
 export default function App() {
   const [page, setPage] = useState("home");
@@ -14,23 +15,26 @@ export default function App() {
     <Provider store={store}>
       <PaperProvider>
         {/* <SafeAreaView style={styles.container}> */}
-        {page === "home" ? <Home gotoBotsPage={() => setPage("bots")} /> : ""}
-        {page === "bots" ? (
-          <Bots
-            gotoLoginPage={() => setPage("home")}
-            gotoSlotsPage={() => setPage("slots")}
-          />
-        ) : (
-          ""
-        )}
-        {page === "slots" ? (
-          <Slots
-            gotoBotsPage={() => setPage("bots")}
-            gotoLoginPage={() => setPage("home")}
-          />
-        ) : (
-          ""
-        )}
+        <AlertNotificationRoot>
+          {page === "home" ? <Home gotoBotsPage={() => setPage("bots")} /> : ""}
+          {page === "bots" ? (
+            <Bots
+              gotoLoginPage={() => setPage("home")}
+              gotoSlotsPage={() => setPage("slots")}
+            />
+          ) : (
+            ""
+          )}
+          {page === "slots" ? (
+            <Slots
+              gotoBotsPage={() => setPage("bots")}
+              gotoLoginPage={() => setPage("home")}
+            />
+          ) : (
+            ""
+          )}
+        </AlertNotificationRoot>
+
         {/* </SafeAreaView> */}
       </PaperProvider>
     </Provider>

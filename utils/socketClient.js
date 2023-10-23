@@ -6,11 +6,18 @@ export default class SocketClient {
 
   connect() {
     console.log("start connecting..");
+
     try {
-      this.socket = io(WEB_SOCKET_HOST);
+      this.socket = io(WEB_SOCKET_HOST, {
+        transports: ["websocket"],
+      });
 
       this.socket.on("error", (e) => {
         console.log("error: ", e);
+      });
+
+      this.socket.on("connect_error", (e) => {
+        console.log("connect_error: ", e);
       });
 
       this.socket.on("disconnect", (e) => {
