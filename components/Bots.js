@@ -10,7 +10,7 @@ import {
   stopBot as stopAdiBot,
 } from "../store/adiSlice";
 
-const Bots = ({ gotoLoginPage, gotoSlotsPage }) => {
+const Bots = ({ gotoLoginPage, gotoSlotsPage, gotoBotsPage }) => {
   const [expanded, setExpanded] = useState(true);
 
   const dispatch = useDispatch();
@@ -28,7 +28,7 @@ const Bots = ({ gotoLoginPage, gotoSlotsPage }) => {
       <Appbar.Header dark theme={{ colors: { surface: "green" } }}>
         <Appbar.BackAction onPress={() => dispatch(disconnect())} />
         <Appbar.Content title="Bots" />
-        <Appbar.Action icon="robot" onPress={() => {}} />
+        <Appbar.Action icon="robot" onPress={() => gotoBotsPage()} />
         <Appbar.Action icon="bookmark" onPress={() => gotoSlotsPage()} />
       </Appbar.Header>
       <Button
@@ -46,6 +46,7 @@ const Bots = ({ gotoLoginPage, gotoSlotsPage }) => {
             bot={adiBots[botId]}
             start={() => dispatch(startAdiBot(botId))}
             stop={() => dispatch(stopAdiBot(botId))}
+            gotoSlotsPage={() => gotoSlotsPage(botId)}
           />
         ))}
       </ScrollView>
@@ -53,7 +54,7 @@ const Bots = ({ gotoLoginPage, gotoSlotsPage }) => {
   );
 };
 
-const BotItem = ({ bot, start, stop }) => {
+const BotItem = ({ bot, start, stop, gotoSlotsPage }) => {
   return (
     <Surface style={styles.botItem}>
       <View
@@ -77,7 +78,9 @@ const BotItem = ({ bot, start, stop }) => {
           ? "Stop"
           : "Start"}
       </Button>
-      <Text>Reserved Slots: {bot.reservedSlots.length}</Text>
+      <Text onPress={gotoSlotsPage}>
+        Reserved Slots: {bot.reservedSlots.length}
+      </Text>
     </Surface>
   );
 };

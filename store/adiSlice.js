@@ -2,12 +2,17 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   bots: {},
+  newSlot: null,
 };
 
 const adiSlice = createSlice({
   name: "adi",
   initialState,
   reducers: {
+    initAdiBots: (state) => {
+      state.bots = {};
+      state.newSlot = null;
+    },
     setIsWorking: (state, { payload }) => {
       if (state.bots[payload])
         state.bots[payload.botId].isWorking = payload.isWorking;
@@ -41,6 +46,10 @@ const adiSlice = createSlice({
         state.bots[botId].reservedSlots = reservedSlots;
       }
     },
+    newReservedSlotAlert: (state, { payload }) => {
+      const { botId, text } = payload;
+      state.newSlot = { botId, text };
+    },
     botConnected: (state, { payload }) => {
       state.bots[payload] = { reservedSlots: [] };
     },
@@ -54,9 +63,19 @@ const adiSlice = createSlice({
       }
     },
     declineSlot: (state, { payload }) => {
-      const { botId, slot } = payload;
-      if (state.bots[botId]) {
-        state.bots[botId].decliningSlot = slot;
+      const { slot } = payload;
+      // console.log(botId, slot);
+      if (state.bots[slot.botId]) {
+        state.bots[slot.botId].reservedSlots = state.bots[
+          slot.botId
+        ].reservedSlots.filter((reservedSlot) => {
+          return (
+            slot.category !== reservedSlot.category ||
+            slot.testCentre !== reservedSlot.testCentre ||
+            slot.slotType !== reservedSlot.slotType ||
+            slot.dateTime !== reservedSlot.dateTime
+          );
+        });
       }
     },
     acceptedSlot: (state, { payload }) => {
@@ -73,9 +92,15 @@ const adiSlice = createSlice({
       if (state.bots[payload]) {
         state.bots[payload].reservedSlots = state.bots[
           payload
-        ].reservedSlots.filter(
-          (slot) => slot !== state.bots[payload].decliningSlot
-        );
+        ].reservedSlots.filter((slot) => {
+          let decliningSlot = state.bots[payload].decliningSlot;
+          return (
+            slot.category !== decliningSlot.category ||
+            slot.testCentre !== decliningSlot.testCentre ||
+            slot.slotType !== decliningSlot.slotType ||
+            slot.dateTime !== decliningSlot.dateTime
+          );
+        });
         state.bots[payload].decliningSlot = null;
       }
     },
@@ -83,6 +108,7 @@ const adiSlice = createSlice({
 });
 
 export const {
+  initAdiBots,
   startBot,
   startedBot,
   stopBot,
@@ -96,5 +122,6 @@ export const {
   botConnected,
   botDisconnected,
   setIsWorking,
+  newReservedSlotAlert,
 } = adiSlice.actions;
 export default adiSlice.reducer;
